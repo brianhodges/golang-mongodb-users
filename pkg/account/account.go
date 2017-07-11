@@ -2,7 +2,6 @@ package account
 
 import (
 	"golang-mongodb-users/pkg/util"
-	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"os"
@@ -78,7 +77,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 		var passwordConfirmation string = r.PostFormValue("password_confirmation")
 
 		//connect to mongodb
-		session, err := mgo.Dial(os.Getenv("MONGODB_URI"))
+		session := util.GetMongoDBSession()
 		defer session.Close()
 		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
 
@@ -122,13 +121,12 @@ func auth(w http.ResponseWriter, r *http.Request) {
 		var password string = r.PostFormValue("password")
 
 		//connect to mongodb
-		session, err := mgo.Dial(os.Getenv("MONGODB_URI"))
-		util.CheckError(err)
+		session := util.GetMongoDBSession()
 		defer session.Close()
 		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
 
 		//find user and check password
-		err = c.Find(bson.M{"username": username}).One(&result)
+		err := c.Find(bson.M{"username": username}).One(&result)
 		if result.PasswordHash == util.Encrypt(result.PasswordSalt, password) {
 			util.CheckError(err)
 			util.SetSession(result.Username, w)
@@ -158,10 +156,10 @@ func AuthenticatedUser(r *http.Request) User {
 	username := util.GetUsernameFromSession(r)
 	if username != "" {
 		//connect to mongodb
-		session, err := mgo.Dial(os.Getenv("MONGODB_URI"))
+		session := util.GetMongoDBSession()
 		defer session.Close()
 		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
-		err = c.Find(bson.M{"username": username}).One(&result)
+		err := c.Find(bson.M{"username": username}).One(&result)
 		util.CheckError(err)
 	}
 	return result

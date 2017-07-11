@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"github.com/gorilla/securecookie"
 	"golang.org/x/crypto/scrypt"
+	"gopkg.in/mgo.v2"
 	"html/template"
 	"log"
+	"os"
 	"net/http"
 )
 
@@ -17,6 +19,7 @@ type Application struct {
 	Version string
 }
 
+var mgoSession   *mgo.Session
 const (
 	//SALTBYTES bytes for salt generation
 	SALTBYTES = 32
@@ -31,6 +34,27 @@ func CheckError(err error) {
 	if err != nil {
 		log.Println("Error:", err)
 	}
+}
+
+func GetMongoDBSession() *mgo.Session {
+	if mgoSession == nil {
+		//Test MongoDB authentication
+		//mongoDBDialInfo := &mgo.DialInfo{
+		//	Addrs:    []string{MongoDBHosts},
+		//	Timeout:  60 * time.Second,
+		//	Database: os.Get("MONGODB_DB"),
+		//	Username: os.Get("MONGODB_USERNAME),
+		//	Password: os.Get("MONGODB_PASSWORD),
+		//}
+		
+		// Create a session which maintains a pool of socket connections
+		// mongoSession, err := mgo.DialWithInfo(mongoDBDialInfo)
+		
+		mgoSession, err := mgo.Dial(os.Getenv("MONGODB_URI"))
+		CheckError(err)
+		return mgoSession
+	}
+	return mgoSession.Copy()
 }
 
 //SetSession sets the cookie
