@@ -1,0 +1,19 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <script src="static/bower_components/jquery/dist/jquery.js"></script>
+    <script src="static/bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="static/js/util.js"></script>
+    <link rel="stylesheet" href="static/bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="static/css/main.css" />
+    <title>{{.App.Name}}</title>
+</head>
+<body>
+    <h1>{{.App.Name}} <button id="logout_button" type="button" class="btn btn-danger">Logout</button></h1>
+    <p>Welcome, {{.User.Username}}!</p>
+</body>
+<footer>
+    v{{.App.Version}}
+</footer>
+</html>

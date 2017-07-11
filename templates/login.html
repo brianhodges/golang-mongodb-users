@@ -1,0 +1,33 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+    <script src="static/bower_components/jquery/dist/jquery.js"></script>
+    <script src="static/bower_components/bootstrap/dist/js/bootstrap.js"></script>
+    <script src="static/js/util.js"></script>
+    <link rel="stylesheet" href="static/bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="static/css/main.css" />
+    <title>{{.App.Name}}</title>
+</head>
+<body>
+    <h1>Login</h1>
+    <div class="login_form">
+        {{ if ne .Message "" }}
+            <strong style="color: red;">{{ .Message }}</strong><br>
+        {{ end }}
+        
+        <form action="/auth" method="post">
+            <div class="field">
+                <label>Username:</label>
+                <input type="text" class="form-control" name="username" id="username" />
+            </div>
+            <div class="field">
+                <label>Password:</label>
+                <input type="password" class="form-control" name="password" id="password" />
+            </div>
+            <p>Need account? <a href="/register">Register</a></p>
+            <button type="submit" class="btn btn-primary login_button">Login</button>
+        </form>
+    </div>
+</body>
+</html>
