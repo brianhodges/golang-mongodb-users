@@ -37,6 +37,7 @@ func CheckError(err error) {
 	}
 }
 
+//GetMongoDBSession sets up MongoDB and copies instance
 func GetMongoDBSession() *mgo.Session {
 	if mgoSession == nil {
 		//Test MongoDB authentication
