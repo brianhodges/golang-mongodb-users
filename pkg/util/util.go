@@ -9,8 +9,8 @@ import (
 	"gopkg.in/mgo.v2"
 	"html/template"
 	"log"
-	"os"
 	"net/http"
+	"os"
 )
 
 //Application defines application info. Used in templates
@@ -19,7 +19,8 @@ type Application struct {
 	Version string
 }
 
-var mgoSession   *mgo.Session
+var mgoSession *mgo.Session
+
 const (
 	//SALTBYTES bytes for salt generation
 	SALTBYTES = 32
@@ -46,10 +47,10 @@ func GetMongoDBSession() *mgo.Session {
 		//	Username: os.Get("MONGODB_USERNAME),
 		//	Password: os.Get("MONGODB_PASSWORD),
 		//}
-		
+
 		// Create a session which maintains a pool of socket connections
 		// mongoSession, err := mgo.DialWithInfo(mongoDBDialInfo)
-		
+
 		mgoSession, err := mgo.Dial(os.Getenv("MONGODB_URI"))
 		CheckError(err)
 		return mgoSession
