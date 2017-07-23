@@ -2,7 +2,6 @@ package account
 
 import (
 	"bytes"
-	"fmt"
 	"golang-mongodb-users/pkg/util"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
