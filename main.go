@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-var app = util.Application{Name: "golang-mongodb-users", Version: "1.0.1"}
+var app = util.Application{Name: "golang-mongodb-users", Version: "1.1.0"}
 
 //IndexVars used for /index template variables
 type IndexVars struct {

@@ -1,16 +1,28 @@
-.register_form {
-    width: 350px;
-}
-.register_button {
-    float: right;
-}
-.login_form {
-    width: 350px;
-}
-.login_button {
-    float: right;
-}
 .field {
     width: 300px;
     padding: 5px;
+}
+
+.register_button {
+    float: right;
+}
+
+.login_button {
+    float: right;
+}
+
+.update_button {
+    float: right;
+}
+
+.register_form {
+    width: 350px;
+}
+
+.login_form {
+    width: 350px;
+}
+
+.update_form {
+    width: 350px;
 }

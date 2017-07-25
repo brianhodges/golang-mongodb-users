@@ -12,7 +12,7 @@ const (
 	COLLECTION = "users"
 )
 
-var app = util.Application{Name: "golang-mongodb-users", Version: "1.0.1"}
+var app = util.Application{Name: "golang-mongodb-users", Version: "1.1.0"}
 
 //User defines the authenticated accounts
 type User struct {
@@ -31,6 +31,7 @@ type TemplateVars struct {
 	App     util.Application
 	Message string
 	Errors  map[string]string
+	Account User
 }
 
 //Initialize Account Routes
@@ -38,8 +39,10 @@ func init() {
 	http.HandleFunc("/register", register)
 	http.HandleFunc("/login", login)
 	http.HandleFunc("/logout", logout)
+	http.HandleFunc("/edit", edit)
 	http.HandleFunc("/create", create)
 	http.HandleFunc("/auth", auth)
+	http.HandleFunc("/update", update)
 }
 
 //GET /register
@@ -64,6 +67,20 @@ func logout(w http.ResponseWriter, r *http.Request) {
 		util.ClearSession(w)
 		data := TemplateVars{App: app, Message: "Logged Out.", Errors: nil}
 		util.Render(w, "templates/login.html", data)
+	}
+}
+
+//GET /edit
+func edit(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "GET" {
+		var result = AuthenticatedUser(r)
+		if result.Username != "" {
+			data := TemplateVars{App: app, Message: "", Errors: nil, Account: result}
+			util.Render(w, "templates/edit.html", data)
+		} else {
+			data := TemplateVars{App: app, Message: "Please Login.", Errors: nil}
+			util.Render(w, "templates/login.html", data)
+		}
 	}
 }
 
@@ -133,6 +150,53 @@ func auth(w http.ResponseWriter, r *http.Request) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
 			data := TemplateVars{App: app, Message: "Error Logging In.", Errors: nil}
+			util.Render(w, "templates/login.html", data)
+		}
+	}
+}
+
+//POST -> /edit
+func update(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		var result = AuthenticatedUser(r)
+		var username string = r.PostFormValue("username")
+		var firstName string = r.PostFormValue("first_name")
+		var lastName string = r.PostFormValue("last_name")
+		var password string = r.PostFormValue("password")
+		var passwordConfirmation string = r.PostFormValue("password_confirmation")
+
+		//connect to mongodb
+		session := util.GetMongoDBSession()
+		defer session.Close()
+		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
+
+		if result.Username != "" {
+			var salt string = util.GenerateSalt()
+			var updUser User
+			updUser.Username = username
+			updUser.FirstName = firstName
+			updUser.LastName = lastName
+			updUser.Password = password
+			updUser.PasswordConfirmation = passwordConfirmation
+			updUser.PasswordSalt = salt
+			updUser.PasswordHash = util.Encrypt(salt, password)
+
+			if updUser.Validate() == false {
+				data := TemplateVars{App: app, Message: "", Errors: result.Errors, Account: result}
+				util.Render(w, "templates/edit.html", data)
+			} else {
+				change := bson.M{"$set": bson.M{"username": updUser.Username,
+					"first_name": updUser.FirstName, "last_name": updUser.LastName,
+					"password_salt": updUser.PasswordSalt, "password_hash": updUser.PasswordHash}}
+				err := c.Update(result, change)
+				util.CheckError(err)
+				util.SetSession(result.Username, w)
+				http.Redirect(w, r, "/", http.StatusSeeOther)
+			}
+		} else {
+			var errors = make(map[string]string)
+			errors["Username"] = "Something went wrong."
+			data := TemplateVars{App: app, Message: "", Errors: errors}
 			util.Render(w, "templates/login.html", data)
 		}
 	}
