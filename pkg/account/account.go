@@ -254,7 +254,6 @@ func parseToken(unparsedToken string) string {
 
 	if err == nil && token.Valid {
 		return token.Claims.(jwt.MapClaims)["username"].(string)
-	} else {
-		return ""
 	}
+	return ""
 }
