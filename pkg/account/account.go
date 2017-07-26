@@ -1,10 +1,12 @@
 package account
 
 import (
+	"github.com/dgrijalva/jwt-go"
 	"golang-mongodb-users/pkg/util"
 	"gopkg.in/mgo.v2/bson"
 	"net/http"
 	"os"
+	"time"
 )
 
 const (
@@ -12,7 +14,8 @@ const (
 	COLLECTION = "users"
 )
 
-var app = util.Application{Name: "golang-mongodb-users", Version: "1.1.0"}
+var tokenEncodeString string = "secretpassphrase"
+var app = util.Application{Name: "golang-mongodb-users", Version: "1.2.0"}
 
 //User defines the authenticated accounts
 type User struct {
@@ -146,7 +149,8 @@ func auth(w http.ResponseWriter, r *http.Request) {
 		err := c.Find(bson.M{"username": username}).One(&result)
 		if result.PasswordHash == util.Encrypt(result.PasswordSalt, password) {
 			util.CheckError(err)
-			util.SetSession(result.Username, w)
+			token := CreateToken(result)
+			util.SetSession(token, w)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
 			data := TemplateVars{App: app, Message: "Error Logging In.", Errors: nil}
@@ -190,7 +194,8 @@ func update(w http.ResponseWriter, r *http.Request) {
 					"password_salt": updUser.PasswordSalt, "password_hash": updUser.PasswordHash}}
 				err := c.Update(result, change)
 				util.CheckError(err)
-				util.SetSession(result.Username, w)
+				token := CreateToken(result)
+				util.SetSession(token, w)
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			}
 		} else {
@@ -217,8 +222,9 @@ func (u *User) Validate() bool {
 //AuthenticatedUser fetches User record from DB using Cookie
 func AuthenticatedUser(r *http.Request) User {
 	var result User
-	username := util.GetUsernameFromSession(r)
-	if username != "" {
+	token := util.GetTokenFromSession(r)
+	if token != "" {
+		username := parseToken(token)
 		//connect to mongodb
 		session := util.GetMongoDBSession()
 		defer session.Close()
@@ -227,4 +233,28 @@ func AuthenticatedUser(r *http.Request) User {
 		util.CheckError(err)
 	}
 	return result
+}
+
+//CreateToken creates token for session
+func CreateToken(user User) string {
+	token := jwt.New(jwt.GetSigningMethod("HS256"))
+	claims := make(jwt.MapClaims)
+	claims["username"] = user.Username
+	claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
+	token.Claims = claims
+	tokenString, err := token.SignedString([]byte(tokenEncodeString))
+	util.CheckError(err)
+	return tokenString
+}
+
+func parseToken(unparsedToken string) string {
+	token, err := jwt.Parse(unparsedToken, func(token *jwt.Token) (interface{}, error) {
+		return []byte(tokenEncodeString), nil
+	})
+
+	if err == nil && token.Valid {
+		return token.Claims.(jwt.MapClaims)["username"].(string)
+	} else {
+		return ""
+	}
 }

@@ -60,9 +60,9 @@ func GetMongoDBSession() *mgo.Session {
 }
 
 //SetSession sets the cookie
-func SetSession(userName string, response http.ResponseWriter) {
+func SetSession(token string, response http.ResponseWriter) {
 	value := map[string]string{
-		"name": userName,
+		"token": token,
 	}
 	if encoded, err := cookieHandler.Encode("session", value); err == nil {
 		cookie := &http.Cookie{
@@ -85,15 +85,15 @@ func ClearSession(response http.ResponseWriter) {
 	http.SetCookie(response, cookie)
 }
 
-//GetUsernameFromSession reads Username from Cookie
-func GetUsernameFromSession(request *http.Request) (userName string) {
+//GetTokenFromSession reads Username from Cookie
+func GetTokenFromSession(request *http.Request) (token string) {
 	if cookie, err := request.Cookie("session"); err == nil {
 		cookieValue := make(map[string]string)
 		if err = cookieHandler.Decode("session", cookie.Value, &cookieValue); err == nil {
-			userName = cookieValue["name"]
+			token = cookieValue["token"]
 		}
 	}
-	return userName
+	return token
 }
 
 //Encrypt encrypts password with salt to hash
