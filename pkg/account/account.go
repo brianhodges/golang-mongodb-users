@@ -14,8 +14,8 @@ const (
 	COLLECTION = "users"
 )
 
-var tokenEncodeString string = "secretpassphrase"
-var app = util.Application{Name: "golang-mongodb-users", Version: "1.2.0"}
+var tokenEncodeString string = os.Getenv("TOKENPHRASE")
+var app = util.Application{Name: "golang-mongodb-users", Version: "1.2.1"}
 
 //User defines the authenticated accounts
 type User struct {
@@ -149,7 +149,7 @@ func auth(w http.ResponseWriter, r *http.Request) {
 		err := c.Find(bson.M{"username": username}).One(&result)
 		if result.PasswordHash == util.Encrypt(result.PasswordSalt, password) {
 			util.CheckError(err)
-			token := CreateToken(result)
+			token := createToken(result)
 			util.SetSession(token, w)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
@@ -186,7 +186,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 			updUser.PasswordHash = util.Encrypt(salt, password)
 
 			if updUser.Validate() == false {
-				data := TemplateVars{App: app, Message: "", Errors: result.Errors, Account: result}
+				data := TemplateVars{App: app, Message: "", Errors: updUser.Errors, Account: result}
 				util.Render(w, "templates/edit.html", data)
 			} else {
 				change := bson.M{"$set": bson.M{"username": updUser.Username,
@@ -194,7 +194,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 					"password_salt": updUser.PasswordSalt, "password_hash": updUser.PasswordHash}}
 				err := c.Update(result, change)
 				util.CheckError(err)
-				token := CreateToken(result)
+				token := createToken(updUser)
 				util.SetSession(token, w)
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			}
@@ -235,8 +235,8 @@ func AuthenticatedUser(r *http.Request) User {
 	return result
 }
 
-//CreateToken creates token for session
-func CreateToken(user User) string {
+//createToken creates token for session
+func createToken(user User) string {
 	token := jwt.New(jwt.GetSigningMethod("HS256"))
 	claims := make(jwt.MapClaims)
 	claims["username"] = user.Username
@@ -247,6 +247,7 @@ func CreateToken(user User) string {
 	return tokenString
 }
 
+//parseToken parses token and returns username
 func parseToken(unparsedToken string) string {
 	token, err := jwt.Parse(unparsedToken, func(token *jwt.Token) (interface{}, error) {
 		return []byte(tokenEncodeString), nil
