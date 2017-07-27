@@ -14,7 +14,7 @@ const (
 	COLLECTION = "users"
 )
 
-var tokenEncodeString string = os.Getenv("TOKENPHRASE")
+var tokenEncodeString string = os.Getenv("TOKEN_SECRET_PHRASE")
 var app = util.Application{Name: "golang-mongodb-users", Version: "1.2.1"}
 
 //User defines the authenticated accounts
