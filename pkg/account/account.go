@@ -221,9 +221,8 @@ func (u User) FullName() string {
 	if u.LastName != "" || u.FirstName != "" {
 		var fName string = u.FirstName + " "
 		return fName + u.LastName
-	} else {
-		return u.Username
 	}
+	return u.Username
 }
 
 //AuthenticatedUser fetches User record from DB using Cookie
