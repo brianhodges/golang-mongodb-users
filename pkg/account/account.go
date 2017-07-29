@@ -14,7 +14,6 @@ const (
 	COLLECTION = "users"
 )
 
-//TOKEN_ENCODE_STRING
 var TOKEN_ENCODE_STRING string = os.Getenv("TOKEN_SECRET_PHRASE")
 
 //User defines the authenticated accounts

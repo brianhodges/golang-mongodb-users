@@ -19,6 +19,7 @@ type Application struct {
 	Version string
 }
 
+//App sets Application Details for Templates
 var App = Application{Name: "golang-mongodb-users", Version: "1.2.2"}
 var mgoSession *mgo.Session
 
