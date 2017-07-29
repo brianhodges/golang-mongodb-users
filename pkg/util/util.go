@@ -19,6 +19,7 @@ type Application struct {
 	Version string
 }
 
+var App = Application{Name: "golang-mongodb-users", Version: "1.2.2"}
 var mgoSession *mgo.Session
 
 const (
@@ -40,18 +41,6 @@ func CheckError(err error) {
 //GetMongoDBSession sets up MongoDB and copies instance
 func GetMongoDBSession() *mgo.Session {
 	if mgoSession == nil {
-		//Test MongoDB authentication
-		//mongoDBDialInfo := &mgo.DialInfo{
-		//	Addrs:    []string{MongoDBHosts},
-		//	Timeout:  60 * time.Second,
-		//	Database: os.Get("MONGODB_DB"),
-		//	Username: os.Get("MONGODB_USERNAME),
-		//	Password: os.Get("MONGODB_PASSWORD),
-		//}
-
-		// Create a session which maintains a pool of socket connections
-		// mongoSession, err := mgo.DialWithInfo(mongoDBDialInfo)
-
 		mgoSession, err := mgo.Dial(os.Getenv("MONGODB_URI"))
 		CheckError(err)
 		return mgoSession

@@ -9,8 +9,6 @@ import (
 	"os"
 )
 
-var app = util.Application{Name: "golang-mongodb-users", Version: "1.2.1"}
-
 //IndexVars used for /index template variables
 type IndexVars struct {
 	App  util.Application
@@ -22,10 +20,10 @@ func index(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var result = account.AuthenticatedUser(r)
 		if result.Username != "" {
-			data := IndexVars{User: result, App: app}
+			data := IndexVars{User: result, App: util.App}
 			util.Render(w, "templates/index.html", data)
 		} else {
-			data := account.TemplateVars{App: app, Message: "Please Login.", Errors: nil}
+			data := account.TemplateVars{App: util.App, Message: "Please Login.", Errors: nil}
 			util.Render(w, "templates/login.html", data)
 		}
 	}

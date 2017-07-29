@@ -14,8 +14,8 @@ const (
 	COLLECTION = "users"
 )
 
-var tokenEncodeString string = os.Getenv("TOKEN_SECRET_PHRASE")
-var app = util.Application{Name: "golang-mongodb-users", Version: "1.2.1"}
+//TOKEN_ENCODE_STRING
+var TOKEN_ENCODE_STRING string = os.Getenv("TOKEN_SECRET_PHRASE")
 
 //User defines the authenticated accounts
 type User struct {
@@ -51,7 +51,7 @@ func init() {
 //GET /register
 func register(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		data := TemplateVars{App: app, Message: "", Errors: nil}
+		data := TemplateVars{App: util.App, Message: "", Errors: nil}
 		util.Render(w, "templates/register.html", data)
 	}
 }
@@ -59,7 +59,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 //GET /login
 func login(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		data := TemplateVars{App: app, Message: "", Errors: nil}
+		data := TemplateVars{App: util.App, Message: "", Errors: nil}
 		util.Render(w, "templates/login.html", data)
 	}
 }
@@ -68,7 +68,7 @@ func login(w http.ResponseWriter, r *http.Request) {
 func logout(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		util.ClearSession(w)
-		data := TemplateVars{App: app, Message: "Logged Out.", Errors: nil}
+		data := TemplateVars{App: util.App, Message: "Logged Out.", Errors: nil}
 		util.Render(w, "templates/login.html", data)
 	}
 }
@@ -78,10 +78,10 @@ func edit(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 		var result = AuthenticatedUser(r)
 		if result.Username != "" {
-			data := TemplateVars{App: app, Message: "", Errors: nil, Account: result}
+			data := TemplateVars{App: util.App, Message: "", Errors: nil, Account: result}
 			util.Render(w, "templates/edit.html", data)
 		} else {
-			data := TemplateVars{App: app, Message: "Please Login.", Errors: nil}
+			data := TemplateVars{App: util.App, Message: "Please Login.", Errors: nil}
 			util.Render(w, "templates/login.html", data)
 		}
 	}
@@ -116,18 +116,18 @@ func create(w http.ResponseWriter, r *http.Request) {
 				PasswordHash:         util.Encrypt(salt, password),
 			}
 			if newuser.Validate() == false {
-				data := TemplateVars{App: app, Message: "", Errors: newuser.Errors}
+				data := TemplateVars{App: util.App, Message: "", Errors: newuser.Errors}
 				util.Render(w, "templates/register.html", data)
 			} else {
 				err = c.Insert(newuser)
 				util.CheckError(err)
-				data := TemplateVars{App: app, Message: "User Successfully Created. Login.", Errors: nil}
+				data := TemplateVars{App: util.App, Message: "User Successfully Created. Login.", Errors: nil}
 				util.Render(w, "templates/login.html", data)
 			}
 		} else {
 			var errors = make(map[string]string)
 			errors["Username"] = "Username already taken."
-			data := TemplateVars{App: app, Message: "", Errors: errors}
+			data := TemplateVars{App: util.App, Message: "", Errors: errors}
 			util.Render(w, "templates/register.html", data)
 		}
 	}
@@ -153,7 +153,7 @@ func auth(w http.ResponseWriter, r *http.Request) {
 			util.SetSession(token, w)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
-			data := TemplateVars{App: app, Message: "Error Logging In.", Errors: nil}
+			data := TemplateVars{App: util.App, Message: "Error Logging In.", Errors: nil}
 			util.Render(w, "templates/login.html", data)
 		}
 	}
@@ -186,12 +186,12 @@ func update(w http.ResponseWriter, r *http.Request) {
 			updUser.PasswordHash = util.Encrypt(salt, password)
 
 			if updUser.Validate() == false {
-				data := TemplateVars{App: app, Message: "", Errors: updUser.Errors, Account: result}
+				data := TemplateVars{App: util.App, Message: "", Errors: updUser.Errors, Account: result}
 				util.Render(w, "templates/edit.html", data)
 			} else {
-				change := bson.M{"$set": bson.M{"username": updUser.Username,
-					"first_name": updUser.FirstName, "last_name": updUser.LastName,
-					"password_salt": updUser.PasswordSalt, "password_hash": updUser.PasswordHash}}
+				change := bson.M{"$set": bson.M{"first_name": updUser.FirstName,
+					"last_name": updUser.LastName, "password_salt": updUser.PasswordSalt,
+					"password_hash": updUser.PasswordHash}}
 				err := c.Update(result, change)
 				util.CheckError(err)
 				token := createToken(updUser)
@@ -201,7 +201,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 		} else {
 			var errors = make(map[string]string)
 			errors["Username"] = "Something went wrong."
-			data := TemplateVars{App: app, Message: "", Errors: errors}
+			data := TemplateVars{App: util.App, Message: "", Errors: errors}
 			util.Render(w, "templates/login.html", data)
 		}
 	}
@@ -210,6 +210,9 @@ func update(w http.ResponseWriter, r *http.Request) {
 //Validate User struct
 func (u *User) Validate() bool {
 	u.Errors = make(map[string]string)
+	if u.Username == "" {
+		u.Errors["Username"] = "Username cannot be blank"
+	}
 	if len(u.Password) < 8 {
 		u.Errors["Password"] = "Password must be at least 8 characters"
 	}
@@ -242,7 +245,7 @@ func createToken(user User) string {
 	claims["username"] = user.Username
 	claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
 	token.Claims = claims
-	tokenString, err := token.SignedString([]byte(tokenEncodeString))
+	tokenString, err := token.SignedString([]byte(TOKEN_ENCODE_STRING))
 	util.CheckError(err)
 	return tokenString
 }
@@ -250,7 +253,7 @@ func createToken(user User) string {
 //parseToken parses token and returns username
 func parseToken(unparsedToken string) string {
 	token, err := jwt.Parse(unparsedToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(tokenEncodeString), nil
+		return []byte(TOKEN_ENCODE_STRING), nil
 	})
 
 	if err == nil && token.Valid {
