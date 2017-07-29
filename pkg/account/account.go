@@ -9,13 +9,6 @@ import (
 	"time"
 )
 
-const (
-	//COLLECTION is the MongoDB Collection name
-	COLLECTION = "users"
-)
-
-var tokenEncodeString string = os.Getenv("TOKEN_SECRET_PHRASE")
-
 //User defines the authenticated accounts
 type User struct {
 	Username             string            `bson:"username"`
@@ -35,6 +28,13 @@ type TemplateVars struct {
 	Errors  map[string]string
 	Account User
 }
+
+const (
+	//COLLECTION is the MongoDB Collection name
+	COLLECTION = "users"
+)
+
+var tokenEncodeString string = os.Getenv("TOKEN_SECRET_PHRASE")
 
 //Initialize Account Routes
 func init() {
@@ -112,14 +112,14 @@ func create(w http.ResponseWriter, r *http.Request) {
 		cnt, err := c.Find(bson.M{"username": username}).Count()
 		util.CheckError(err)
 		if cnt == 0 {
-			if u.Validate() == false {
-				data := TemplateVars{App: util.App, Message: "", Errors: u.Errors}
-				util.Render(w, "templates/register.html", data)
-			} else {
+			if u.Validate() {
 				err = c.Insert(u)
 				util.CheckError(err)
 				data := TemplateVars{App: util.App, Message: "User Successfully Created. Login.", Errors: nil}
 				util.Render(w, "templates/login.html", data)
+			} else {
+				data := TemplateVars{App: util.App, Message: "", Errors: u.Errors}
+				util.Render(w, "templates/register.html", data)
 			}
 		} else {
 			var errors = make(map[string]string)
@@ -142,7 +142,7 @@ func auth(w http.ResponseWriter, r *http.Request) {
 		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
 
 		err := c.Find(bson.M{"username": username}).One(&result)
-		if result.PasswordHash == util.Encrypt(result.PasswordSalt, password) {
+		if correctPassword(result, password) {
 			util.CheckError(err)
 			token := createToken(result)
 			util.SetSession(token, w)
@@ -179,10 +179,7 @@ func update(w http.ResponseWriter, r *http.Request) {
 		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
 
 		if result.Username != "" {
-			if u.Validate() == false {
-				data := TemplateVars{App: util.App, Message: "", Errors: u.Errors, Account: result}
-				util.Render(w, "templates/edit.html", data)
-			} else {
+			if u.Validate() {
 				change := bson.M{"$set": bson.M{"first_name": u.FirstName,
 					"last_name": u.LastName, "password_salt": u.PasswordSalt,
 					"password_hash": u.PasswordHash}}
@@ -191,6 +188,9 @@ func update(w http.ResponseWriter, r *http.Request) {
 				token := createToken(u)
 				util.SetSession(token, w)
 				http.Redirect(w, r, "/", http.StatusSeeOther)
+			} else {
+				data := TemplateVars{App: util.App, Message: "", Errors: u.Errors, Account: result}
+				util.Render(w, "templates/edit.html", data)
 			}
 		} else {
 			var errors = make(map[string]string)
@@ -216,6 +216,16 @@ func (u *User) Validate() bool {
 	return len(u.Errors) == 0
 }
 
+//FullName concatenates User's name
+func (u User) FullName() string {
+	if u.LastName != "" || u.FirstName != "" {
+		var fName string = u.FirstName + " "
+		return fName + u.LastName
+	} else {
+		return u.Username
+	}
+}
+
 //AuthenticatedUser fetches User record from DB using Cookie
 func AuthenticatedUser(r *http.Request) User {
 	var result User
@@ -229,6 +239,10 @@ func AuthenticatedUser(r *http.Request) User {
 		util.CheckError(err)
 	}
 	return result
+}
+
+func correctPassword(u User, p string) bool {
+	return u.PasswordHash == util.Encrypt(u.PasswordSalt, p)
 }
 
 //createToken creates token for session
