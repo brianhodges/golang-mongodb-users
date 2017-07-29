@@ -19,15 +19,14 @@ type Application struct {
 	Version string
 }
 
-//App sets Application Details for Templates
-var App = Application{Name: "golang-mongodb-users", Version: "1.2.2"}
-var mgoSession *mgo.Session
-
 const (
 	//SALTBYTES bytes for salt generation
 	SALTBYTES = 32
 )
 
+//App sets Application Details for Templates
+var App = Application{Name: "golang-mongodb-users", Version: "1.2.2"}
+var mgoSession *mgo.Session
 var cookieHandler = securecookie.New(
 	securecookie.GenerateRandomKey(64),
 	securecookie.GenerateRandomKey(32))
@@ -75,7 +74,7 @@ func ClearSession(response http.ResponseWriter) {
 	http.SetCookie(response, cookie)
 }
 
-//GetTokenFromSession reads Username from Cookie
+//GetTokenFromSession reads token from Cookie
 func GetTokenFromSession(request *http.Request) (token string) {
 	if cookie, err := request.Cookie("session"); err == nil {
 		cookieValue := make(map[string]string)

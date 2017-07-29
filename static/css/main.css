@@ -3,26 +3,10 @@
     padding: 5px;
 }
 
-.register_button {
+.register_button, .login_button, .update_button {
     float: right;
 }
 
-.login_button {
-    float: right;
-}
-
-.update_button {
-    float: right;
-}
-
-.register_form {
-    width: 350px;
-}
-
-.login_form {
-    width: 350px;
-}
-
-.update_form {
+.register_form, .login_form, .update_form {
     width: 350px;
 }
