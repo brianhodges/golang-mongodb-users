@@ -14,7 +14,7 @@ const (
 	COLLECTION = "users"
 )
 
-var TOKEN_ENCODE_STRING string = os.Getenv("TOKEN_SECRET_PHRASE")
+var tokenEncodeString string = os.Getenv("TOKEN_SECRET_PHRASE")
 
 //User defines the authenticated accounts
 type User struct {
@@ -244,7 +244,7 @@ func createToken(user User) string {
 	claims["username"] = user.Username
 	claims["exp"] = time.Now().Add(time.Minute * 60).Unix()
 	token.Claims = claims
-	tokenString, err := token.SignedString([]byte(TOKEN_ENCODE_STRING))
+	tokenString, err := token.SignedString([]byte(tokenEncodeString))
 	util.CheckError(err)
 	return tokenString
 }
@@ -252,7 +252,7 @@ func createToken(user User) string {
 //parseToken parses token and returns username
 func parseToken(unparsedToken string) string {
 	token, err := jwt.Parse(unparsedToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(TOKEN_ENCODE_STRING), nil
+		return []byte(tokenEncodeString), nil
 	})
 
 	if err == nil && token.Valid {
