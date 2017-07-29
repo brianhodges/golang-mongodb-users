@@ -219,8 +219,7 @@ func (u *User) Validate() bool {
 //FullName concatenates User's name
 func (u User) FullName() string {
 	if u.LastName != "" || u.FirstName != "" {
-		var fName string = u.FirstName + " "
-		return fName + u.LastName
+		return u.FirstName + " " + u.LastName
 	}
 	return u.Username
 }
