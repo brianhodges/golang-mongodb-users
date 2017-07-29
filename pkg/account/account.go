@@ -75,9 +75,9 @@ func logout(w http.ResponseWriter, r *http.Request) {
 //GET /edit
 func edit(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		var result = AuthenticatedUser(r)
-		if result.Username != "" {
-			data := TemplateVars{App: util.App, Message: "", Errors: nil, Account: result}
+		var u = AuthenticatedUser(r)
+		if u.Username != "" {
+			data := TemplateVars{App: util.App, Message: "", Errors: nil, Account: u}
 			util.Render(w, "templates/edit.html", data)
 		} else {
 			data := TemplateVars{App: util.App, Message: "Please Login.", Errors: nil}
@@ -122,9 +122,9 @@ func create(w http.ResponseWriter, r *http.Request) {
 				util.Render(w, "templates/register.html", data)
 			}
 		} else {
-			var errors = make(map[string]string)
-			errors["Username"] = "Username already taken."
-			data := TemplateVars{App: util.App, Message: "", Errors: errors}
+			var e = make(map[string]string)
+			e["Username"] = "Username already taken."
+			data := TemplateVars{App: util.App, Message: "", Errors: e}
 			util.Render(w, "templates/register.html", data)
 		}
 	}
@@ -133,7 +133,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 //POST -> /login
 func auth(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		var result User
+		var u User
 		var username string = r.PostFormValue("username")
 		var password string = r.PostFormValue("password")
 
@@ -141,10 +141,10 @@ func auth(w http.ResponseWriter, r *http.Request) {
 		defer session.Close()
 		c := session.DB(os.Getenv("MONGODB_DB")).C(COLLECTION)
 
-		err := c.Find(bson.M{"username": username}).One(&result)
-		if correctPassword(result, password) {
+		err := c.Find(bson.M{"username": username}).One(&u)
+		if correctPassword(u, password) {
 			util.CheckError(err)
-			token := createToken(result)
+			token := createToken(u)
 			util.SetSession(token, w)
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 		} else {
@@ -193,9 +193,9 @@ func update(w http.ResponseWriter, r *http.Request) {
 				util.Render(w, "templates/edit.html", data)
 			}
 		} else {
-			var errors = make(map[string]string)
-			errors["Username"] = "Something went wrong."
-			data := TemplateVars{App: util.App, Message: "", Errors: errors}
+			var e = make(map[string]string)
+			e["Username"] = "Something went wrong."
+			data := TemplateVars{App: util.App, Message: "", Errors: e}
 			util.Render(w, "templates/login.html", data)
 		}
 	}
