@@ -90,9 +90,11 @@ func edit(w http.ResponseWriter, r *http.Request) {
 func create(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var salt string = util.GenerateSalt()
-		var username, firstName, lastName, password, passwordConfirmation string = r.PostFormValue("username"), r.PostFormValue("first_name"),
-			r.PostFormValue("last_name"), r.PostFormValue("password"),
-			r.PostFormValue("password_confirmation")
+		var username string = r.PostFormValue("username")
+		var firstName string = r.PostFormValue("first_name")
+		var lastName string = r.PostFormValue("last_name")
+		var password string = r.PostFormValue("password")
+		var passwordConfirmation string = r.PostFormValue("password_confirmation")
 		var u = &User{
 			Username:             username,
 			FirstName:            firstName,
@@ -157,9 +159,11 @@ func update(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var salt string = util.GenerateSalt()
 		var result = AuthenticatedUser(r)
-		var username, firstName, lastName, password, passwordConfirmation string = r.PostFormValue("username"), r.PostFormValue("first_name"),
-			r.PostFormValue("last_name"), r.PostFormValue("password"),
-			r.PostFormValue("password_confirmation")
+		var username string = r.PostFormValue("username")
+		var firstName string = r.PostFormValue("first_name")
+		var lastName string = r.PostFormValue("last_name")
+		var password string = r.PostFormValue("password")
+		var passwordConfirmation string = r.PostFormValue("password_confirmation")
 		var u = User{
 			Username:             username,
 			FirstName:            firstName,
