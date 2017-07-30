@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/kabukky/httpscerts"
 	"golang-mongodb-users/pkg/account"
 	"golang-mongodb-users/pkg/util"
 	"log"
@@ -35,17 +34,10 @@ func handlerICon(w http.ResponseWriter, r *http.Request) {}
 
 //Initialize Server with Routes
 func main() {
-    err := httpscerts.Check("cert.pem", "key.pem")
-    if err != nil {
-        err = httpscerts.Generate("cert.pem", "key.pem", "127.0.0.1:8081")
-        if err != nil {
-            log.Fatal("Error: Couldn't create https certs.")
-        }
-    }
 	fmt.Println("Running local server @ http://localhost:" + os.Getenv("PORT"))
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 	http.HandleFunc("/favicon.ico", handlerICon)
 	http.HandleFunc("/", index)
-	log.Fatal(http.ListenAndServeTLS(":"+os.Getenv("PORT"), "cert.pem", "key.pem", nil))
+	log.Fatal(http.ListenAndServe(":"+os.Getenv("PORT"), nil))
 }
