@@ -17,6 +17,10 @@
 			"Rev": "e59506cc896acb7f7bf732d4fdf5e25f7ccd8983"
 		},
 		{
+			"ImportPath": "github.com/kabukky/httpscerts",
+			"Rev": "617593d7dcb39c9ed617bb62c5e2056244d02184"
+		},
+		{
 			"ImportPath": "golang.org/x/crypto/pbkdf2",
 			"Rev": "0fe963104e9d1877082f8fb38f816fcd97eb1d10"
 		},
