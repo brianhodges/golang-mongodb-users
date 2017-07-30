@@ -239,6 +239,7 @@ func AuthenticatedUser(r *http.Request) User {
 	return result
 }
 
+//correctPassword checks input password with stored hash
 func correctPassword(u User, p string) bool {
 	return u.PasswordHash == util.Encrypt(u.PasswordSalt, p)
 }

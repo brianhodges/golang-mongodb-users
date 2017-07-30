@@ -10,7 +10,23 @@
     <title>{{.App.Name}}</title>
 </head>
 <body>
-    <h1>{{.App.Name}} <button id="logout_button" type="button" class="btn btn-danger">Logout</button></h1>
+    <div class="menu-container">
+        <div class="dropdown">
+            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown">
+                <span class="glyphicon glyphicon-list" aria-hidden="true"></span>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a href="/edit">
+                    <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>&nbsp;Edit Profile
+                </a></li>
+                <li><a href="/logout">
+                    <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>&nbsp;Logout
+                </a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <h1>{{.App.Name}}</h1>
     <p>Welcome, {{.User.FullName}}!</p>
 </body>
 <footer>

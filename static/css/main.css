@@ -10,3 +10,8 @@
 .register_form, .login_form, .update_form {
     width: 350px;
 }
+
+.menu-container {
+    padding-top: 5px;
+    padding-left: 5px;
+}

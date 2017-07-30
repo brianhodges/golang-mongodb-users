@@ -25,7 +25,7 @@ const (
 )
 
 //App sets Application Details for Templates
-var App = Application{Name: "golang-mongodb-users", Version: "1.2.4"}
+var App = Application{Name: "golang-mongodb-users", Version: "1.3.0"}
 var mgoSession *mgo.Session
 var cookieHandler = securecookie.New(
 	securecookie.GenerateRandomKey(64),
