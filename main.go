@@ -18,9 +18,9 @@ type IndexVars struct {
 //GET /index
 func index(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		var result = account.AuthenticatedUser(r)
-		if result.Username != "" {
-			data := IndexVars{User: result, App: util.App}
+		u := account.AuthenticatedUser(r)
+		if u.Username != "" {
+			data := IndexVars{User: u, App: util.App}
 			util.Render(w, "templates/index.html", data)
 		} else {
 			data := account.TemplateVars{App: util.App, Message: "Please Login.", Errors: nil}

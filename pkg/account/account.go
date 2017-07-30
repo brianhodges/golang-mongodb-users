@@ -75,7 +75,7 @@ func logout(w http.ResponseWriter, r *http.Request) {
 //GET /edit
 func edit(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
-		var u = AuthenticatedUser(r)
+		u := AuthenticatedUser(r)
 		if u.Username != "" {
 			data := TemplateVars{App: util.App, Message: "", Errors: nil, Account: u}
 			util.Render(w, "templates/edit.html", data)
@@ -89,13 +89,13 @@ func edit(w http.ResponseWriter, r *http.Request) {
 //POST -> /register
 func create(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		var salt string = util.GenerateSalt()
-		var username string = r.PostFormValue("username")
-		var firstName string = r.PostFormValue("first_name")
-		var lastName string = r.PostFormValue("last_name")
-		var password string = r.PostFormValue("password")
-		var passwordConfirmation string = r.PostFormValue("password_confirmation")
-		var u = &User{
+		salt := util.GenerateSalt()
+		username := r.PostFormValue("username")
+		firstName := r.PostFormValue("first_name")
+		lastName := r.PostFormValue("last_name")
+		password := r.PostFormValue("password")
+		passwordConfirmation := r.PostFormValue("password_confirmation")
+		u := &User{
 			Username:             username,
 			FirstName:            firstName,
 			LastName:             lastName,
@@ -122,7 +122,7 @@ func create(w http.ResponseWriter, r *http.Request) {
 				util.Render(w, "templates/register.html", data)
 			}
 		} else {
-			var e = make(map[string]string)
+			e := make(map[string]string)
 			e["Username"] = "Username already taken."
 			data := TemplateVars{App: util.App, Message: "", Errors: e}
 			util.Render(w, "templates/register.html", data)
@@ -134,8 +134,8 @@ func create(w http.ResponseWriter, r *http.Request) {
 func auth(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		var u User
-		var username string = r.PostFormValue("username")
-		var password string = r.PostFormValue("password")
+		username := r.PostFormValue("username")
+		password := r.PostFormValue("password")
 
 		session := util.GetMongoDBSession()
 		defer session.Close()
@@ -157,14 +157,14 @@ func auth(w http.ResponseWriter, r *http.Request) {
 //POST -> /edit
 func update(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		var salt string = util.GenerateSalt()
-		var result = AuthenticatedUser(r)
-		var username string = r.PostFormValue("username")
-		var firstName string = r.PostFormValue("first_name")
-		var lastName string = r.PostFormValue("last_name")
-		var password string = r.PostFormValue("password")
-		var passwordConfirmation string = r.PostFormValue("password_confirmation")
-		var u = User{
+		result := AuthenticatedUser(r)
+		salt := util.GenerateSalt()
+		username := r.PostFormValue("username")
+		firstName := r.PostFormValue("first_name")
+		lastName := r.PostFormValue("last_name")
+		password := r.PostFormValue("password")
+		passwordConfirmation := r.PostFormValue("password_confirmation")
+		u := User{
 			Username:             username,
 			FirstName:            firstName,
 			LastName:             lastName,
@@ -185,15 +185,13 @@ func update(w http.ResponseWriter, r *http.Request) {
 					"password_hash": u.PasswordHash}}
 				err := c.Update(result, change)
 				util.CheckError(err)
-				token := createToken(u)
-				util.SetSession(token, w)
 				http.Redirect(w, r, "/", http.StatusSeeOther)
 			} else {
 				data := TemplateVars{App: util.App, Message: "", Errors: u.Errors, Account: result}
 				util.Render(w, "templates/edit.html", data)
 			}
 		} else {
-			var e = make(map[string]string)
+			e := make(map[string]string)
 			e["Username"] = "Something went wrong."
 			data := TemplateVars{App: util.App, Message: "", Errors: e}
 			util.Render(w, "templates/login.html", data)
