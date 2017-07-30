@@ -27,7 +27,7 @@
     </div>
     
     <h1>Edit Profile</h1>
-    <div class="update_form">
+    <div class="update-form">
         {{ $length := len .Errors }}
         {{ if ne $length 0 }}
             {{range $e := .Errors}}
@@ -56,7 +56,7 @@
                 <label>Password Confirmation:</label>
                 <input type="password" class="form-control" name="password_confirmation" id="password_confirmation" />
             </div>
-            <button type="submit" class="btn btn-primary update_button">Update</button>
+            <button type="submit" class="btn btn-primary update-button">Update</button>
         </form>
     </div>
 </body>
